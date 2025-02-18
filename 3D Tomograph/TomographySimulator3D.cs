@@ -40,8 +40,9 @@ namespace _3D_Tomograph
         private Point3D[,] entryPoints;
         private Point3D[,] endPoints;
         private LinearFunction3D[,,,] lineFunctions;
+        private List<Shape3D> shapes;
 
-        public TomographySimulator3D(int MatrixSize)
+        public TomographySimulator3D(int MatrixSize, List<Shape3D> shapes)
         {
             this.matrixSize = MatrixSize;
 
@@ -53,12 +54,44 @@ namespace _3D_Tomograph
             {
                 for (int j = 0; j < matrixSize; j++)
                 {
-                    entryPoints[i, j] = new Point3D(-1 + (double)(2*i) / (matrixSize - 1), 0 + (double)(2*j) / (matrixSize - 1), -1);
-                    endPoints[i, j] = new Point3D(0 + (double)(2*i) / (matrixSize - 1), 0 + (double)(2*j) / (matrixSize - 1), 1);
+                    entryPoints[i, j] = new Point3D(-1 + (double)(2 * i) / (matrixSize - 1), 0 + (double)(2 * j) / (matrixSize - 1), -1);
+                    endPoints[i, j] = new Point3D(0 + (double)(2 * i) / (matrixSize - 1), 0 + (double)(2 * j) / (matrixSize - 1), 1);
                 }
             }
 
-            
+            this.shapes = shapes;
+        }
+
+        public double[] CalculateLosses()
+        {
+            double[] flattenedResult = new double[(int)Math.Pow(matrixSize, 4)];
+
+            double[,,,] results = new double[matrixSize, matrixSize, matrixSize, matrixSize];
+
+            for(int i = 0; i<matrixSize; i++)
+            {
+                for (int j = 0;j < matrixSize; j++)
+                {
+                    for(int k = 0; k < matrixSize; k++)
+                    {
+                        for(int l = 0; l < matrixSize; l++)
+                        {
+                            results[i, j, k, l] = 0;
+
+                            foreach(var shape in shapes)
+                            {
+                                results[i, j, k, l] += shape.calculateLoss(lineFunctions[i, j, k, l]);
+                            }
+
+                            flattenedResult[(int)(i * Math.Pow(matrixSize, 3)) + (int)(j * Math.Pow(matrixSize, 2)) + k * matrixSize + l] = results[i, j, k, l];
+                        }
+                    }
+                }
+            }
+
+
+
+            return flattenedResult;
         }
     }
 }
