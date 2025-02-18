@@ -20,7 +20,17 @@ namespace _3D_Tomograph
 
     class LinearFunction3D
     {
+        private Point3D start;
+        private Point3D end;
 
+        public Point3D Start {  get { return start; } }
+        public Point3D End { get { return end; } }
+
+        public LinearFunction3D(Point3D startPoint, Point3D endPoint) 
+        {
+            start = startPoint;
+            end = endPoint;
+        }
     }
 
 
@@ -29,6 +39,7 @@ namespace _3D_Tomograph
         private int matrixSize;
         private Point3D[,] entryPoints;
         private Point3D[,] endPoints;
+        private LinearFunction3D[,,,] lineFunctions;
 
         public TomographySimulator3D(int MatrixSize)
         {
@@ -36,6 +47,7 @@ namespace _3D_Tomograph
 
             entryPoints = new Point3D[matrixSize, matrixSize];
             endPoints = new Point3D[matrixSize, matrixSize];
+            lineFunctions = new LinearFunction3D[matrixSize, matrixSize, matrixSize, matrixSize];
 
             for (int i = 0; i < matrixSize; i++)
             {
@@ -45,6 +57,8 @@ namespace _3D_Tomograph
                     endPoints[i, j] = new Point3D(0 + (double)(2*i) / (matrixSize - 1), 0 + (double)(2*j) / (matrixSize - 1), 1);
                 }
             }
+
+            
         }
     }
 }
