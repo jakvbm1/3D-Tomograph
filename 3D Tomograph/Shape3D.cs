@@ -72,7 +72,7 @@ namespace _3D_Tomograph
             return (lf.Start.x < x && lf.End.x > x && y > lf.Start.y && y < lf.End.y);
         }
 
-        public bool frontBack(LinearFunction3D lf) 
+        public bool BackEnter(LinearFunction3D lf) 
         {
             double t = -1 * (lf.Start.z - endPoint.z) * (lf.End.z - lf.Start.z) / Math.Pow((lf.End.z - lf.Start.z), 2);
 
@@ -83,6 +83,44 @@ namespace _3D_Tomograph
 
         }
 
+        public bool LeftEnter(LinearFunction3D lf) 
+        {
+            double t = -1 * (lf.Start.x - startPoint.x) * (lf.End.x - lf.Start.x) / Math.Pow((lf.End.x - lf.Start.x), 2);
 
+            double y = lf.Start.y + t * (lf.End.y - lf.Start.y);
+            double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+
+            return (lf.Start.z < z && lf.End.z > z && y > lf.Start.y && y < lf.End.y);
+        }
+
+        public bool RightEnter(LinearFunction3D lf)
+        {
+            double t = -1 * (lf.Start.x - endPoint.x) * (lf.End.x - lf.Start.x) / Math.Pow((lf.End.x - lf.Start.x), 2);
+
+            double y = lf.Start.y + t * (lf.End.y - lf.Start.y);
+            double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+
+            return (lf.Start.z < z && lf.End.z > z && y > lf.Start.y && y < lf.End.y);
+        }
+
+        public bool BottomEnter(LinearFunction3D lf) 
+        {
+            double t = -1 * (lf.Start.y - startPoint.y) * (lf.End.y - lf.Start.y) / Math.Pow((lf.End.y - lf.Start.y), 2);
+
+            double x = lf.Start.x + t * (lf.End.x - lf.Start.x);
+            double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+
+            return (lf.Start.z < z && lf.End.z > z && z > lf.Start.z && z < lf.End.z);
+        }
+
+        public bool TopEnter(LinearFunction3D lf)
+        {
+            double t = -1 * (lf.Start.y - endPoint.y) * (lf.End.y - lf.Start.y) / Math.Pow((lf.End.y - lf.Start.y), 2);
+
+            double x = lf.Start.x + t * (lf.End.x - lf.Start.x);
+            double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+
+            return (lf.Start.z < z && lf.End.z > z && z > lf.Start.z && z < lf.End.z);
+        }
     }
 }
