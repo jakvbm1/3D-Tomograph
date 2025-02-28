@@ -59,7 +59,75 @@ namespace _3D_Tomograph
 
         public double calculateLoss(LinearFunction3D linearFunction)
         {
-            throw new NotImplementedException();
+            if (linearFunction.End.x == linearFunction.Start.x)
+            {
+
+                //prosto - prosto
+                if (linearFunction.End.y == linearFunction.Start.y)
+                {
+                    if (frontEnter(linearFunction))
+                    {
+                        return material * (endPoint.z - startPoint.z);
+                    }
+
+                    else { return 0; }
+                }
+                //prosto - w dol
+                else if (linearFunction.Start.y > linearFunction.End.y) 
+                {
+                    Point3D? enterPoint = null;
+
+                    if (frontEnter(linearFunction))
+                    {
+                        double t = -1 * (linearFunction.Start.z - startPoint.z) * (linearFunction.End.z - linearFunction.Start.z) / Math.Pow((linearFunction.End.z - linearFunction.Start.z), 2);
+                        double x = linearFunction.Start.x + t * (linearFunction.End.x - linearFunction.Start.x);
+                        double y = linearFunction.Start.y + t * (linearFunction.End.y - linearFunction.Start.y);
+
+                        enterPoint = new Point3D(x, y, startPoint.z);
+                    }
+
+                    else if(TopEnter(linearFunction))
+                    {
+                        double t = -1 * (linearFunction.Start.y - endPoint.y) * (linearFunction.End.y - linearFunction.Start.y) / Math.Pow((linearFunction.End.y - linearFunction.Start.y), 2);
+
+                        double x = linearFunction.Start.x + t * (linearFunction.End.x - linearFunction.Start.x);
+                        double z = linearFunction.Start.z + t * (linearFunction.End.z - linearFunction.Start.z);
+                        enterPoint = new Point3D(x, startPoint.y, z);
+                    }
+
+                    if(enterPoint is null)
+                    {
+                        return 0;
+                    }
+
+                    else
+                    {
+                        Point3D leavePoint = new Point3D(0, 0, 0);
+                        if (BackEnter(linearFunction))
+                        {
+                            double t = -1 * (linearFunction.Start.z - endPoint.z) * (linearFunction.End.z - linearFunction.Start.z) / Math.Pow((linearFunction.End.z - linearFunction.Start.z), 2);
+                            double x = linearFunction.Start.x + t * (linearFunction.End.x - linearFunction.Start.x);
+                            double y = linearFunction.Start.y + t * (linearFunction.End.y - linearFunction.Start.y);
+
+                            leavePoint = new Point3D(x, y, endPoint.z);
+                        }
+
+                        else
+                        {
+                            double t = -1 * (linearFunction.Start.y - endPoint.y) * (linearFunction.End.y - linearFunction.Start.y) / Math.Pow((linearFunction.End.y - linearFunction.Start.y), 2);
+
+                            double x = linearFunction.Start.x + t * (linearFunction.End.x - linearFunction.Start.x);
+                            double z = linearFunction.Start.z + t * (linearFunction.End.z - linearFunction.Start.z);
+
+                            leavePoint = new Point3D(x, endPoint.y, z);
+                        }
+
+                        double distance = Math.Sqrt(Math.Pow(leavePoint.x - ((Point3D)enterPoint).x, 2) + Math.Pow(leavePoint.y - ((Point3D)enterPoint).y, 2) + Math.Pow(leavePoint.z - ((Point3D)enterPoint).z, 2)) * material;
+                    }
+                }
+            }
+
+            return 0;
         }
 
         public bool frontEnter(LinearFunction3D lf)
