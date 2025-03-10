@@ -55,6 +55,15 @@ namespace _3D_Tomograph
         Point3D startPoint;
         Point3D endPoint;
         double material;
+
+        public Cuboid(double material, Point3D start, Point3D end)
+        {
+            this.material = material;
+
+            startPoint = new Point3D(Math.Min(start.x, end.x), Math.Min(start.y, end.y), Math.Min(start.z, end.z));
+            endPoint = new Point3D(Math.Max(start.x, end.x), Math.Max(start.y, end.y), Math.Max(start.z, end.z));
+        }
+
         public double Material => material;
 
         public double calculateLoss(LinearFunction3D linearFunction)
