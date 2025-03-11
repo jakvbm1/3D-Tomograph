@@ -59,6 +59,20 @@ namespace _3D_Tomograph
                 }
             }
 
+            for (int i = 0; i<matrixSize; i++)
+            {
+                for(int j = 0;j < matrixSize; j++)
+                {
+                    for(int  k = 0; k < matrixSize; k++)
+                    {
+                        for(int l = 0; l < matrixSize; l++)
+                        {
+                            lineFunctions[i, j, k, l] = new LinearFunction3D(entryPoints[i, j], endPoints[k, l]);
+                        }
+                    }
+                }
+            }
+
             this.shapes = shapes;
         }
 
