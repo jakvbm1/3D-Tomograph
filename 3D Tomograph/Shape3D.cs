@@ -29,25 +29,42 @@ namespace _3D_Tomograph
 
         public double calculateLoss(LinearFunction3D linearFunction)
         {
-            double t = -1* (linearFunction.Start.z - center.z) * (linearFunction.End.z - linearFunction.Start.z) / Math.Pow((linearFunction.End.z - linearFunction.Start.z), 2);
+            // Direction vector of the line
+            double dx = linearFunction.End.x - linearFunction.Start.x;
+            double dy = linearFunction.End.y - linearFunction.Start.y;
+            double dz = linearFunction.End.z - linearFunction.Start.z;
 
-            double squareDistance = Math.Pow(((linearFunction.Start.x - center.x) + t * (linearFunction.End.x - linearFunction.Start.x)), 2) +
-                Math.Pow(((linearFunction.Start.y - center.y) + t * (linearFunction.End.y - linearFunction.Start.y)), 2) +
-                Math.Pow(((linearFunction.Start.z - center.z) + t * (linearFunction.End.z - linearFunction.Start.z)), 2);
+            // Vector from start of the line to the sphere center
+            double sx = center.x - linearFunction.Start.x;
+            double sy = center.y - linearFunction.Start.y;
+            double sz = center.z - linearFunction.Start.z;
 
+            // Projection factor t, clamped to the line segment
+            double t = (sx * dx + sy * dy + sz * dz) / (dx * dx + dy * dy + dz * dz);
+            t = Math.Max(0, Math.Min(1, t));  // Clamp t to [0,1] to ensure it's within the segment
+
+            // Closest point on the line segment to the sphere center
+            double closestX = linearFunction.Start.x + t * dx;
+            double closestY = linearFunction.Start.y + t * dy;
+            double closestZ = linearFunction.Start.z + t * dz;
+
+            // Distance from the closest point to the sphere center
+            double squareDistance = (closestX - center.x) * (closestX - center.x) +
+                                    (closestY - center.y) * (closestY - center.y) +
+                                    (closestZ - center.z) * (closestZ - center.z);
 
             double distance = Math.Sqrt(squareDistance);
 
-            if (distance >= radius) 
+            if (distance >= radius)
             {
-                return 0;
+                return 0; // No intersection
             }
 
-            else
-            {
-                return material * 2 * Math.Sqrt(radius * radius + distance * distance);
-            }
+            // Compute the actual loss based on the segment passing through the sphere
+            double penetrationDepth = 2 * Math.Sqrt(radius * radius - distance * distance);
+            return material * penetrationDepth;
         }
+
     }
 
     class Cuboid : Shape3D

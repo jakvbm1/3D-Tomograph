@@ -54,8 +54,8 @@ namespace _3D_Tomograph
             {
                 for (int j = 0; j < matrixSize; j++)
                 {
-                    entryPoints[i, j] = new Point3D(-1 + (double)(2 * i) / (matrixSize - 1), 0 + (double)(2 * j) / (matrixSize - 1), -1);
-                    endPoints[i, j] = new Point3D(0 + (double)(2 * i) / (matrixSize - 1), 0 + (double)(2 * j) / (matrixSize - 1), 1);
+                    entryPoints[i, j] = new Point3D(-1 + (double)(2 * i) / (matrixSize - 1), -1 + (double)(2 * j) / (matrixSize - 1), -1);
+                    endPoints[i, j] = new Point3D(-1 + (double)(2 * i) / (matrixSize - 1), -1 + (double)(2 * j) / (matrixSize - 1), 1);
                 }
             }
 
