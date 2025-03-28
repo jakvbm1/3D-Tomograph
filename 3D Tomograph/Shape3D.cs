@@ -759,8 +759,77 @@ namespace _3D_Tomograph
 
             else if (lf.End.y == lf.Start.y && lf.Start.x > lf.End.x && !firstPointPresent) { return 0; } //promien idzie prosto-lewo, nie trafia
 
+            t = (startPoint.y - lf.Start.y) / (lf.End.y - lf.Start.y);
+            x = lf.Start.x + t * (lf.End.x - lf.Start.x);
+            z = lf.Start.z + t * (lf.End.z - lf.Start.z);
 
-            return 0;
+            if (startPoint.x <= x && x >= endPoint.x && startPoint.z <= z && z >= endPoint.z)
+            {
+                if (!firstPointPresent)
+                {
+                    enterPoint = new Point3D(x, startPoint.y, z);
+                    firstPointPresent = true;
+                }
+
+                else
+                {
+                    leavePoint = new Point3D(x, startPoint.y, z);
+                    secondPointPresent = true;
+                }
+            }
+
+            else if (!firstPointPresent && lf.Start.y >= lf.End.y)  //jezeli nie mamy sytuacji promien idzie prosto i w gore to wiemy ze nie trafia
+            {
+                return 0;
+            }
+
+            t = (endPoint.y - lf.Start.y) / (lf.End.y - lf.Start.y);
+            x = lf.Start.x + t * (lf.End.x - lf.Start.x);
+            z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+
+            if (startPoint.x <= x && x >= endPoint.x && startPoint.z <= z && z >= endPoint.z)
+            {
+                if (!firstPointPresent)
+                {
+                    enterPoint = new Point3D(x, endPoint.y, z);
+                    firstPointPresent = true;
+                }
+
+                else
+                {
+                    leavePoint = new Point3D(x, endPoint.y, z);
+                    secondPointPresent = true;
+                }
+            }
+
+            if (!firstPointPresent) { return 0; } //jezeli atp nie bylo wejscia w prostokat, to jest juz niemozliwe by bylo
+            else if (!secondPointPresent) 
+            {
+                t = (endPoint.z + 1) / 2;
+                x = lf.Start.x + t * (lf.End.x - lf.Start.x);
+                y = lf.Start.y + t * (lf.End.y - lf.Start.y);
+
+                if (startPoint.x <= x && x >= endPoint.x && startPoint.y <= y && y >= endPoint.y)
+                {
+                    leavePoint = new Point3D(x, y, endPoint.z);
+                    secondPointPresent = true;
+                }
+            }
+
+            if (firstPointPresent && secondPointPresent)
+            {
+                if (enterPoint is not null && leavePoint is not null)
+                {
+                    Point3D ep = (Point3D) enterPoint;
+                    Point3D lp = (Point3D) leavePoint;
+
+                    double distance = Math.Pow(lp.x - ep.x, 2) + Math.Pow(lp.y - ep.y, 2) + Math.Pow(lp.z - ep.z, 2);
+                    distance = Math.Sqrt(distance);
+                    return distance * material;
+                }
+            }
+
+                return 0;
         }
     }
 }
