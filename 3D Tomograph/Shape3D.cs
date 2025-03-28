@@ -698,138 +698,63 @@ namespace _3D_Tomograph
 
         public double calculateLoss(LinearFunction3D lf)
         {
-            Point3D? enterPoint = null;
-            Point3D? leavePoint = null;
+            double tMin = double.NegativeInfinity, tMax = double.PositiveInfinity;
 
-            bool firstPointPresent = false;
-            bool secondPointPresent = false;
-            bool enterFront = false;
-            double t = (startPoint.z + 1)/2;
-            double x = lf.Start.x + t*(lf.End.x - lf.Start.x);
-            double y = lf.Start.y + t*(lf.End.y - lf.Start.y);
+            Point3D rayDir = new Point3D(lf.End.x - lf.Start.x, lf.End.y - lf.Start.y, lf.End.z - lf.Start.z);
+            Point3D rayOrig = lf.Start;
 
-            if(startPoint.x <= x && x >= endPoint.x && startPoint.y <= y && y >= endPoint.y)
+            double[] boundsX = { startPoint.x, endPoint.x };
+            double[] boundsY = { startPoint.y, endPoint.y };
+            double[] boundsZ = { startPoint.z, endPoint.z };
+
+            // Iterate over x, y, z axes
+            for (int i = 0; i < 3; i++)
             {
-                enterPoint = new Point3D(x, y, startPoint.z);
-                firstPointPresent = true;
-                enterFront = true;
-            }
+                double origin = i == 0 ? rayOrig.x : (i == 1 ? rayOrig.y : rayOrig.z);
+                double direction = i == 0 ? rayDir.x : (i == 1 ? rayDir.y : rayDir.z);
+                double minBound = i == 0 ? boundsX[0] : (i == 1 ? boundsY[0] : boundsZ[0]);
+                double maxBound = i == 0 ? boundsX[1] : (i == 1 ? boundsY[1] : boundsZ[1]);
 
-            else if (lf.Start.x == lf.End.x && lf.Start.y == lf.End.y) { return 0; } //promien idzie prosto, nie trafia
-
-            t = (startPoint.x - lf.Start.x) / (lf.End.x - lf.Start.x);
-            y = lf.Start.y + t * (lf.End.y - lf.Start.y);
-            double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
-
-            if (startPoint.y <= y && y >= endPoint.y && startPoint.z <= z && z >= endPoint.z)
-            {
-                if (!firstPointPresent)
+                if (Math.Abs(direction) < 1e-6)
                 {
-                    enterPoint = new Point3D(startPoint.x, y, z);
-                    firstPointPresent = true;
+                    if (origin < minBound || origin > maxBound)
+                        return 0; // No intersection
                 }
-
                 else
                 {
-                    leavePoint = new Point3D(startPoint.x, y, z);
-                    secondPointPresent = true;
+                    double t0 = (minBound - origin) / direction;
+                    double t1 = (maxBound - origin) / direction;
+
+                    if (t0 > t1) (t0, t1) = (t1, t0); // Swap if necessary
+
+                    tMin = Math.Max(tMin, t0);
+                    tMax = Math.Min(tMax, t1);
+
+                    if (tMin > tMax)
+                        return 0; // No intersection
                 }
             }
 
-            else if (lf.End.y == lf.Start.y && lf.Start.x < lf.End.x && !firstPointPresent) { return 0; } //promien idzie prosto-prawo, nie trafia
+            if (tMin < 0 && tMax < 0)
+                return 0; // Ray points away from the box
 
-            t = (endPoint.x - lf.Start.x) / (lf.End.x - lf.Start.x);
-            y = lf.Start.y + t * (lf.End.y - lf.Start.y);
-            z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+            // **Compute entry and exit points in 3D space**
+            Point3D entryPoint = new Point3D(rayOrig.x + tMin * rayDir.x,
+                                             rayOrig.y + tMin * rayDir.y,
+                                             rayOrig.z + tMin * rayDir.z);
 
-            if (startPoint.y <= y && y >= endPoint.y && startPoint.z <= z && z >= endPoint.z)
-            {
-                if (!firstPointPresent)
-                {
-                    enterPoint = new Point3D(endPoint.x, y, z);
-                    firstPointPresent = true;
-                }
+            Point3D exitPoint = new Point3D(rayOrig.x + tMax * rayDir.x,
+                                            rayOrig.y + tMax * rayDir.y,
+                                            rayOrig.z + tMax * rayDir.z);
 
-                else
-                {
-                    leavePoint = new Point3D(endPoint.x, y, z);
-                    secondPointPresent = true;
-                }
-            }
+            // **Compute Euclidean distance**
+            double distance = Math.Sqrt(Math.Pow(exitPoint.x - entryPoint.x, 2) +
+                                        Math.Pow(exitPoint.y - entryPoint.y, 2) +
+                                        Math.Pow(exitPoint.z - entryPoint.z, 2));
 
-            else if (lf.End.y == lf.Start.y && lf.Start.x > lf.End.x && !firstPointPresent) { return 0; } //promien idzie prosto-lewo, nie trafia
-
-            t = (startPoint.y - lf.Start.y) / (lf.End.y - lf.Start.y);
-            x = lf.Start.x + t * (lf.End.x - lf.Start.x);
-            z = lf.Start.z + t * (lf.End.z - lf.Start.z);
-
-            if (startPoint.x <= x && x >= endPoint.x && startPoint.z <= z && z >= endPoint.z)
-            {
-                if (!firstPointPresent)
-                {
-                    enterPoint = new Point3D(x, startPoint.y, z);
-                    firstPointPresent = true;
-                }
-
-                else
-                {
-                    leavePoint = new Point3D(x, startPoint.y, z);
-                    secondPointPresent = true;
-                }
-            }
-
-            else if (!firstPointPresent && lf.Start.y >= lf.End.y)  //jezeli nie mamy sytuacji promien idzie prosto i w gore to wiemy ze nie trafia
-            {
-                return 0;
-            }
-
-            t = (endPoint.y - lf.Start.y) / (lf.End.y - lf.Start.y);
-            x = lf.Start.x + t * (lf.End.x - lf.Start.x);
-            z = lf.Start.z + t * (lf.End.z - lf.Start.z);
-
-            if (startPoint.x <= x && x >= endPoint.x && startPoint.z <= z && z >= endPoint.z)
-            {
-                if (!firstPointPresent)
-                {
-                    enterPoint = new Point3D(x, endPoint.y, z);
-                    firstPointPresent = true;
-                }
-
-                else
-                {
-                    leavePoint = new Point3D(x, endPoint.y, z);
-                    secondPointPresent = true;
-                }
-            }
-
-            if (!firstPointPresent) { return 0; } //jezeli atp nie bylo wejscia w prostokat, to jest juz niemozliwe by bylo
-            else if (!secondPointPresent) 
-            {
-                t = (endPoint.z + 1) / 2;
-                x = lf.Start.x + t * (lf.End.x - lf.Start.x);
-                y = lf.Start.y + t * (lf.End.y - lf.Start.y);
-
-                if (startPoint.x <= x && x >= endPoint.x && startPoint.y <= y && y >= endPoint.y)
-                {
-                    leavePoint = new Point3D(x, y, endPoint.z);
-                    secondPointPresent = true;
-                }
-            }
-
-            if (firstPointPresent && secondPointPresent)
-            {
-                if (enterPoint is not null && leavePoint is not null)
-                {
-                    Point3D ep = (Point3D) enterPoint;
-                    Point3D lp = (Point3D) leavePoint;
-
-                    double distance = Math.Pow(lp.x - ep.x, 2) + Math.Pow(lp.y - ep.y, 2) + Math.Pow(lp.z - ep.z, 2);
-                    distance = Math.Sqrt(distance);
-                    return distance * material;
-                }
-            }
-
-                return 0;
+            return distance * material;
         }
+
+
     }
 }
