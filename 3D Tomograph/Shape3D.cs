@@ -10,7 +10,7 @@ namespace _3D_Tomograph
     internal interface Shape3D
     {
         public double Material { get; }
-        public double calculateLoss(LinearFunction3D linearFunction);
+        public double calculateLoss(LinearFunction3D lf);
     }
 
     class Sphere : Shape3D
@@ -635,7 +635,7 @@ namespace _3D_Tomograph
             double x = lf.Start.x + t * (lf.End.x - lf.Start.x);
             double y = lf.Start.y + t * (lf.End.y - lf.Start.y);
 
-            return (lf.Start.x < x && lf.End.x > x && y > lf.Start.y && y < lf.End.y);
+            return (lf.Start.x <= x && lf.End.x >= x && y >= lf.Start.y && y <= lf.End.y);
 
         }
 
@@ -646,7 +646,7 @@ namespace _3D_Tomograph
             double y = lf.Start.y + t * (lf.End.y - lf.Start.y);
             double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
 
-            return (lf.Start.z < z && lf.End.z > z && y > lf.Start.y && y < lf.End.y);
+            return (lf.Start.z <= z && lf.End.z >= z && y >= lf.Start.y && y <= lf.End.y);
         }
 
         public bool RightEnter(LinearFunction3D lf)
@@ -656,7 +656,7 @@ namespace _3D_Tomograph
             double y = lf.Start.y + t * (lf.End.y - lf.Start.y);
             double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
 
-            return (lf.Start.z < z && lf.End.z > z && y > lf.Start.y && y < lf.End.y);
+            return (lf.Start.z <= z && lf.End.z >= z && y >= lf.Start.y && y <= lf.End.y);
         }
 
         public bool BottomEnter(LinearFunction3D lf) 
@@ -666,7 +666,7 @@ namespace _3D_Tomograph
             double x = lf.Start.x + t * (lf.End.x - lf.Start.x);
             double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
 
-            return (lf.Start.z < z && lf.End.z > z && z > lf.Start.z && z < lf.End.z);
+            return (lf.Start.z <= z && lf.End.z >= z && z >= lf.Start.z && z <= lf.End.z);
         }
 
         public bool TopEnter(LinearFunction3D lf)
@@ -676,7 +676,91 @@ namespace _3D_Tomograph
             double x = lf.Start.x + t * (lf.End.x - lf.Start.x);
             double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
 
-            return (lf.Start.z < z && lf.End.z > z && z > lf.Start.z && z < lf.End.z);
+            return (lf.Start.z <= z && lf.End.z >= z && z >= lf.Start.z && z <= lf.End.z);
+        }
+    }
+
+    class Cuboid2: Shape3D
+    {
+        Point3D startPoint;
+        Point3D endPoint;
+        double material;
+
+        public double Material => material;
+
+        public Cuboid2(double material, Point3D start, Point3D end)
+        {
+            this.material = material;
+
+            startPoint = new Point3D(Math.Min(start.x, end.x), Math.Min(start.y, end.y), Math.Min(start.z, end.z));
+            endPoint = new Point3D(Math.Max(start.x, end.x), Math.Max(start.y, end.y), Math.Max(start.z, end.z));
+        }
+
+        public double calculateLoss(LinearFunction3D lf)
+        {
+            Point3D? enterPoint = null;
+            Point3D? leavePoint = null;
+
+            bool firstPointPresent = false;
+            bool secondPointPresent = false;
+            bool enterFront = false;
+            double t = (startPoint.z + 1)/2;
+            double x = lf.Start.x + t*(lf.End.x - lf.Start.x);
+            double y = lf.Start.y + t*(lf.End.y - lf.Start.y);
+
+            if(startPoint.x <= x && x >= endPoint.x && startPoint.y <= y && y >= endPoint.y)
+            {
+                enterPoint = new Point3D(x, y, startPoint.z);
+                firstPointPresent = true;
+                enterFront = true;
+            }
+
+            else if (lf.Start.x == lf.End.x && lf.Start.y == lf.End.y) { return 0; } //promien idzie prosto, nie trafia
+
+            t = (startPoint.x - lf.Start.x) / (lf.End.x - lf.Start.x);
+            y = lf.Start.y + t * (lf.End.y - lf.Start.y);
+            double z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+
+            if (startPoint.y <= y && y >= endPoint.y && startPoint.z <= z && z >= endPoint.z)
+            {
+                if (!firstPointPresent)
+                {
+                    enterPoint = new Point3D(startPoint.x, y, z);
+                    firstPointPresent = true;
+                }
+
+                else
+                {
+                    leavePoint = new Point3D(startPoint.x, y, z);
+                    secondPointPresent = true;
+                }
+            }
+
+            else if (lf.End.y == lf.Start.y && lf.Start.x < lf.End.x && !firstPointPresent) { return 0; } //promien idzie prosto-prawo, nie trafia
+
+            t = (endPoint.x - lf.Start.x) / (lf.End.x - lf.Start.x);
+            y = lf.Start.y + t * (lf.End.y - lf.Start.y);
+            z = lf.Start.z + t * (lf.End.z - lf.Start.z);
+
+            if (startPoint.y <= y && y >= endPoint.y && startPoint.z <= z && z >= endPoint.z)
+            {
+                if (!firstPointPresent)
+                {
+                    enterPoint = new Point3D(endPoint.x, y, z);
+                    firstPointPresent = true;
+                }
+
+                else
+                {
+                    leavePoint = new Point3D(endPoint.x, y, z);
+                    secondPointPresent = true;
+                }
+            }
+
+            else if (lf.End.y == lf.Start.y && lf.Start.x > lf.End.x && !firstPointPresent) { return 0; } //promien idzie prosto-lewo, nie trafia
+
+
+            return 0;
         }
     }
 }

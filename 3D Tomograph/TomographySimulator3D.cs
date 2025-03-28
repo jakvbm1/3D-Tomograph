@@ -94,6 +94,9 @@ namespace _3D_Tomograph
 
                             foreach(var shape in shapes)
                             {
+                                Console.WriteLine($"({lineFunctions[i, j, k, l].Start.x}, {lineFunctions[i, j, k, l].Start.y}, {lineFunctions[i, j, k, l].Start.z})");
+                                Console.WriteLine($"({lineFunctions[i, j, k, l].End.x}, {lineFunctions[i, j, k, l].End.y}, {lineFunctions[i, j, k, l].End.z})");
+                                Console.WriteLine($"{ shape.calculateLoss(lineFunctions[i,j,k,l]) } \n");
                                 results[i, j, k, l] += shape.calculateLoss(lineFunctions[i, j, k, l]);
                             }
 

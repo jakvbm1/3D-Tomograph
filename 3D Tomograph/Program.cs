@@ -8,5 +8,5 @@ double[] array = simulator.CalculateLosses();
 Console.WriteLine(array.Length);
 foreach  (double value in array)
 {
-    Console.WriteLine(value);
+    //Console.WriteLine(value);
 }
